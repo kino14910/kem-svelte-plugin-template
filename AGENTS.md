@@ -2,7 +2,7 @@
 
 - **Language**: TypeScript
 - **Package Manager**: pnpm
-- **Add-ons**: vitest, playwright, tailwindcss, enhanced-img, sveltekit-adapter, ai-tools
+- **Add-ons**: Svelte 5, Vite, ai-tools
 
 ---
 

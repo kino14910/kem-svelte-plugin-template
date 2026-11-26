@@ -1,54 +1,37 @@
-import { enhancedImages } from '@sveltejs/enhanced-img';
-import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vitest/config';
-import { playwright } from '@vitest/browser-playwright';
-import adapter from '@sveltejs/adapter-static';
-import { sveltekit } from '@sveltejs/kit/vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-	plugins: [
-		enhancedImages(),
-		tailwindcss(),
-		sveltekit({
-			compilerOptions: {
-				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
-				runes: ({ filename }) =>
-					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
-			},
-			// KEM serves the prerendered document at a per-window URL.
-			embedded: true,
-			version: { pollInterval: 0 },
-			output: { bundleStrategy: 'inline' },
-			adapter: adapter()
-		})
-	],
-	build: { assetsInlineLimit: () => true },
-	test: {
-		expect: { requireAssertions: true },
-		projects: [
-			{
-				extends: './vite.config.ts',
-				test: {
-					name: 'client',
-					browser: {
-						enabled: true,
-						provider: playwright(),
-						instances: [{ browser: 'chromium', headless: true }]
-					},
-					include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-					exclude: ['src/lib/server/**']
-				}
-			},
-
-			{
-				extends: './vite.config.ts',
-				test: {
-					name: 'server',
-					environment: 'node',
-					include: ['src/**/*.{test,spec}.{js,ts}'],
-					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
-				}
-			}
-		]
-	}
+  plugins: [svelte({ compilerOptions: { runes: true, css: 'injected' } })],
+  build: {
+    outDir: 'build',
+    emptyOutDir: true,
+    lib: {
+      entry: 'src/client.ts',
+      formats: ['iife'],
+      name: '__KEM_CLIENT_PLUGIN__',
+      fileName: () => 'client.js',
+    },
+    rollupOptions: {
+      external: [
+        'svelte',
+        'svelte/internal/client',
+        'svelte/internal/disclose-version',
+        'svelte/store',
+        'svelte/reactivity',
+      ],
+      output: {
+        globals: {
+          svelte: 'KEM_PLATFORM.svelte',
+          'svelte/internal/client': 'KEM_PLATFORM.svelteInternalClient',
+          'svelte/internal/disclose-version':
+            'KEM_PLATFORM.discloseVersion',
+          'svelte/store': 'KEM_PLATFORM.svelteStore',
+          'svelte/reactivity': 'KEM_PLATFORM.svelteReactivity',
+        },
+      },
+    },
+    cssCodeSplit: false,
+    assetsInlineLimit: () => true,
+  },
 });
