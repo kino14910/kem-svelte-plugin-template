@@ -6,7 +6,7 @@
 	"type": "module",
 	"packageManager": "pnpm@12.21.0+sha512.66fd8278ee28935ce951792d34367ff3af5c432a2756445823029533835b8da529bbe0be5130afd56ed0713fb8789e47bad82d93bd5ae2fe54b15562d6276ef0",
 	"files": [
-		"dist/client.js",
+		"dist/",
 		"host.mjs"
 	],
 	"kem": {
@@ -15,17 +15,20 @@
 		"title": "计数器",
 		"description": "演示导航页、底栏、托盘与共享状态的 KEM 客户端插件",
 		"client": {
-			"entry": "./dist/client.js",
+			"root": "./dist",
+			"entry": "./client.js",
 			"label": "计数器"
 		},
 		"host": "./host.mjs"
 	},
 	"scripts": {
 		"dev": "vite build --watch",
-		"build": "vite build && node scripts/package-client.mjs",
-		"prepack": "vite build && node scripts/package-client.mjs",
+		"build": "vite build && node scripts/check-client.mjs",
+		"prepack": "pnpm run build",
 		"check": "svelte-check --tsconfig ./tsconfig.json",
-		"test": "vite build && node scripts/package-client.mjs && node --test tests/*.test.mjs"
+		"test": "pnpm run build && pnpm run test:client",
+		"test:client": "node --conditions=browser --test tests/*.test.mjs",
+		"scaffold": "node scripts/scaffold.mjs"
 	},
 	"devDependencies": {
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",

@@ -1,7 +1,11 @@
+import { kem } from '../package.json';
 import ExamplePage from './ExamplePage.svelte';
 import ExampleFooter from './ExampleFooter.svelte';
 import { useDesktop, type DesktopContext } from './sdk/desktop.ts';
 import { count, increment, readCount, reset } from './example-store.ts';
+import { trayMenu } from './tray-menu.ts';
+
+const { id, client: { label } } = kem;
 
 interface ClientContext extends DesktopContext {
   provide(name: string, value: unknown): unknown;
@@ -20,13 +24,15 @@ interface ClientContext extends DesktopContext {
 export default {
   inject: ['navRail', 'surfaces'],
   async apply(ctx: ClientContext) {
+    // Native ESM may be cached between activations within the same window.
+    reset();
     // Both contributions import the same module, so they share one live count.
     ctx.navRail.add({
-      id: 'example-counter',
-      label: '计数器',
+      id,
+      label,
       view: ExamplePage,
     });
-    ctx.surfaces.register('footer', 'example-counter', ExampleFooter);
+    ctx.surfaces.register('footer', id, ExampleFooter);
 
     // Other client plugins can inject `exampleCounter` and subscribe.
     ctx.provide('exampleCounter', {
@@ -39,9 +45,6 @@ export default {
       if (id === 'increment') increment();
       if (id === 'reset') reset();
     });
-    await desktop.menu([
-      { id: 'increment', label: '加一' },
-      { id: 'reset', label: '重置' },
-    ]);
+    await desktop.menu(trayMenu);
   },
 };

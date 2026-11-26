@@ -2,17 +2,18 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: './',
+  publicDir: false,
   plugins: [svelte({ compilerOptions: { runes: true, css: 'injected' } })],
   build: {
-    outDir: 'build',
+    outDir: 'dist',
     emptyOutDir: true,
     lib: {
       entry: 'src/client.ts',
-      formats: ['iife'],
-      name: '__KEM_CLIENT_PLUGIN__',
+      formats: ['es'],
       fileName: () => 'client.js',
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: [
         'svelte',
         'svelte/internal/client',
@@ -21,17 +22,12 @@ export default defineConfig({
         'svelte/reactivity',
       ],
       output: {
-        globals: {
-          svelte: 'KEM_PLATFORM.svelte',
-          'svelte/internal/client': 'KEM_PLATFORM.svelteInternalClient',
-          'svelte/internal/disclose-version':
-            'KEM_PLATFORM.discloseVersion',
-          'svelte/store': 'KEM_PLATFORM.svelteStore',
-          'svelte/reactivity': 'KEM_PLATFORM.svelteReactivity',
+        chunkFileNames: 'chunks/[name]-[hash].js',
+        codeSplitting: {
+          // Keep one real relative import in the example even without lazy loading.
+          groups: [{ name: 'tray-menu', test: /[/\\]tray-menu\.ts$/ }],
         },
       },
     },
-    cssCodeSplit: false,
-    assetsInlineLimit: () => true,
   },
 });
